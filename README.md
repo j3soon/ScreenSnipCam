@@ -2,6 +2,10 @@
 
 Screenshot capture with a virtual camera window, works on Windows, Linux, and MacOS.
 
+## Screenshots
+
+![](docs/images/preview.png)
+
 ## Prerequisites
 
 ### Windows
