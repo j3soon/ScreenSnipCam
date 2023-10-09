@@ -1,17 +1,22 @@
 import argparse
 import platform
+import sys
 import tkinter as tk
 from datetime import datetime
 from pathlib import Path
 
-from PIL import ImageGrab, ImageOps
-
 import utils.windows
+from PIL import ImageGrab, ImageOps
 
 
 class ScreenSnipCam:
     def __init__(self, path):
         self.frame1_size = (-1, -1)
+        self.frame1_thickness = 1
+        # Ref: https://stackoverflow.com/a/69325836
+        if platform.system() == "Windows" and sys.getwindowsversion().build >= 22000:
+            # Windows 11 has round window edges
+            self.frame1_thickness = 4
         self.transparent_color = "gray"
         self.dirpath = Path(path)
 
@@ -20,7 +25,8 @@ class ScreenSnipCam:
             # Only listen to frame1 resize events
             return
         # Shrink the snip region to avoid capturing the black border of frame1
-        w, h = event.width-2, event.height-2
+        w = event.width - 2 * self.frame1_thickness
+        h = event.height - 2 * self.frame1_thickness
         if self.frame1_size == (w, h):
             # Only listen to size changes
             return
@@ -28,10 +34,10 @@ class ScreenSnipCam:
         self.root.title(f"ScreenSnipCam: {w}x{h}")
 
     def save_screenshot(self):
-        x = self.frame1.winfo_rootx() + 1
-        y = self.frame1.winfo_rooty() + 1
-        w = self.frame1.winfo_width() - 2
-        h = self.frame1.winfo_height() - 2
+        x = self.frame1.winfo_rootx() + 1 * self.frame1_thickness
+        y = self.frame1.winfo_rooty() + 1 * self.frame1_thickness
+        w = self.frame1.winfo_width() - 2 * self.frame1_thickness
+        h = self.frame1.winfo_height() - 2 * self.frame1_thickness
         assert (w, h) == self.frame1_size
         cropping = self.check1_var.get()
 
@@ -73,7 +79,7 @@ class ScreenSnipCam:
             self.root,
             background=self.transparent_color,
             highlightbackground="black",
-            highlightthickness=1
+            highlightthickness=self.frame1_thickness
         )
         # Controls
         self.frame1.grid(row=0, column=0, sticky=tk.NSEW)
